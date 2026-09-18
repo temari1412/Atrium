@@ -1,0 +1,15 @@
+<?php
+
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
+
+Artisan::command('inspire', function () {
+    $this->comment(Inspiring::quote());
+})->purpose('Display an inspiring quote');
+
+
+// ３ヶ月後にステータス完了にしておく
+use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Log;
+
+Schedule::command('orders:complete-old')->daily();

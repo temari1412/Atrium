@@ -1,0 +1,8 @@
+document.write("");
+var adData = {
+  type: "headerBidding",
+  headerBidding: false
+}
+document.write("<script>var adData={type:\"headerBidding\",headerBidding:!0,gpt:{adUnitPath:\"/21259798/pixiv_pc_illust_rectangle_prebid\",divID:\"div-gpt-ad-1753262040377-0\",sizes:[[300,600]],keyValues:{p_s:\"0\",p_a:\"0\",p_up:\"0\",p_l:\"ja\",p_ng:\"w\",p_g:[],p_gng:\"w\",p_yng:\"w\",p_pt:\"1\"}},adg:{adID:\"215081\",adType:\"PC\",displayID:\"1\"},a9SlotName:\"/21259798/pixiv_pc_illust_rectangle_prebid\"}</scr"+"ipt>");
+window.parent.postMessage(adData);
+if(document.readyState!=="loading"){document.body.insertAdjacentHTML('beforeend', '<img src="https://pixon.ads-pixiv.net/imp?D=812ee0f1531b0e82&ab_test_digits_first=43&ad_group_id=22894&campaign_id=21108&client_id=1091&creative_id=35461&format=js&illust_id=90528723&l=ja&ng=w&num=3&os=pc&ref=www.pixiv.net%2Fartworks%2F90528723&s=0&sl=58&up=0&uri=%2Fajax%2Fillust%2F_PARAM_&yuid=EHOXBWA&zone_id=illust_rectangle" width="1" height="1" style="display:none">');}else{document.addEventListener("DOMContentLoaded",function(){document.body.insertAdjacentHTML('beforeend', '<img src="https://pixon.ads-pixiv.net/imp?D=812ee0f1531b0e82&ab_test_digits_first=43&ad_group_id=22894&campaign_id=21108&client_id=1091&creative_id=35461&format=js&illust_id=90528723&l=ja&ng=w&num=3&os=pc&ref=www.pixiv.net%2Fartworks%2F90528723&s=0&sl=58&up=0&uri=%2Fajax%2Fillust%2F_PARAM_&yuid=EHOXBWA&zone_id=illust_rectangle" width="1" height="1" style="display:none">');},{once:true});}
