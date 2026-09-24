@@ -118,7 +118,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::get('/contacts', [AdminContactController::class, 'index'])->name('contacts.index');
     Route::get('/contacts/{contact}', [AdminContactController::class, 'show'])->name('contacts.show');
-    Route::patch('/contacts/{id}/status', [AdminContactController::class, 'updateStatus'])->name('contacts.updateStatus'); // ← 追加
+    Route::patch('/contacts/{id}/status', [AdminContactController::class, 'updateStatus'])->name('contacts.updateStatus');
 });
 
 // メール・問い合わせ
