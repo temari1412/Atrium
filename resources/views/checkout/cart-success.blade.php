@@ -43,70 +43,67 @@
             @endif
         </div>
 
-        {{-- カート内の各商品ごとのレビュー投稿フォーム一覧 --}}
-        @foreach($order->orderItems as $item)
-            <div class="bg-white p-8 sm:p-10 rounded-[24px] shadow-xl border border-white/50">
-                {{-- 商品情報ヘッダー --}}
-                <div class="flex items-center space-x-4 mb-6 pb-4 border-b border-gray-100">
-                    <div class="w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner">
-                        @if($item->product->image)
-                            <img src="{{ Storage::disk('s3')->url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
-                        @else
-                            <img src="https://placehold.co/200x200" alt="no image" class="w-full h-full object-cover">
-                        @endif
-                    </div>
-                    <div>
-                        <h2 class="font-bold text-lg text-gray-800">{{ $item->product->name }}</h2>
-                        <p class="text-sm text-[#00a3cc] font-bold">¥{{ number_format($item->price_at_purchase) }} <span class="text-gray-400 font-normal">（数量: {{ $item->quantity }}）</span></p>
-                    </div>
-                </div>
+        {{-- ページ全体を1つのフォームにして、最後に1つだけボタンを配置 --}}
+        <form action="{{ route('reviews.storeBatch', $order->id) }}" method="POST" class="space-y-6">
+            @csrf
 
-                <form action="{{ route('reviews.store', $item->product->id) }}" method="POST" class="space-y-6">
-                    @csrf
+            {{-- カート内の各商品ごとのレビュー入力欄（ボタンなし） --}}
+            @foreach($order->orderItems as $item)
+                <div class="bg-white p-8 sm:p-10 rounded-[24px] shadow-xl border border-white/50 space-y-6">
+                    {{-- 商品情報ヘッダー --}}
+                    <div class="flex items-center space-x-4 pb-4 border-b border-gray-100">
+                        <div class="w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner">
+                            @if($item->product->image)
+                                <img src="{{ Storage::disk('s3')->url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
+                            @else
+                                <img src="https://placehold.co/200x200" alt="no image" class="w-full h-full object-cover">
+                            @endif
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-lg text-gray-800">{{ $item->product->name }}</h2>
+                            <p class="text-sm text-[#00a3cc] font-bold">¥{{ number_format($item->price_at_purchase) }} <span class="text-gray-400 font-normal">（数量: {{ $item->quantity }}）</span></p>
+                        </div>
+                    </div>
+
                     {{-- 評価 --}}
                     <div class="text-center">
                         <label class="block text-xs font-bold uppercase tracking-wider mb-3 text-gray-400">評価</label>
                         <div class="star-rating flex space-x-2 cursor-pointer justify-center">
                             @for($i = 1; $i <= 5; $i++)
-                                <svg class="star w-9 h-9 transition-transform hover:scale-110 text-gray-200 hover:text-yellow-400" 
+                                <svg class="star w-9 h-9 transition-transform hover:scale-110 text-yellow-400" 
                                      data-value="{{ $i }}" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                             @endfor
                         </div>
-                        <input type="hidden" name="rating" class="rating-value" value="5">
+                        <input type="hidden" name="reviews[{{ $item->product->id }}][rating]" class="rating-value" value="5">
                     </div>
 
+                    {{-- コメント欄 --}}
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider mb-2 text-gray-400">コメント</label>
-                        <textarea name="comment" class="w-full border border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-[#00d2ff] focus:outline-none bg-gray-50/50 transition" rows="4" placeholder="作品の感想をお聞かせください（今後いつでも投稿できます）" required></textarea>
+                        <textarea name="reviews[{{ $item->product->id }}][comment]" class="w-full border border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-[#00d2ff] focus:outline-none bg-gray-50/50 transition" rows="4" placeholder="作品の感想をお聞かせください（空欄でもOKです）"></textarea>
                     </div>
-                    
-                    <div class="space-y-3 pt-2">
-                        <button type="submit" class="w-full bg-[#00d2ff] text-white py-3.5 rounded-2xl font-bold hover:bg-[#00b8e6] transition shadow-lg shadow-cyan-500/20">
-                            この作品のレビューを投稿する
-                        </button>
-                        <a href="{{ route('products.show', $item->product->id) }}" class="block text-center text-gray-400 text-sm hover:text-gray-600 py-2">
-                            スキップする
-                        </a>
-                    </div>
-                </form>
-            </div>
-        @endforeach
+                </div>
+            @endforeach
 
-        <!-- {{-- トップページへ戻るリンク --}}
-        <div class="text-center pt-2">
-            <a href="{{ route('top') }}" class="inline-block text-white text-sm font-bold underline hover:opacity-80 transition py-2">
-                トップページへ戻る
-            </a>
-        </div> -->
+            {{-- ページの一番下に配置する、全体をまとめて送信するボタン --}}
+            <div class="bg-white p-6 rounded-[24px] shadow-xl border border-white/50 space-y-3">
+                <button type="submit" class="w-full bg-[#00d2ff] text-white py-3.5 rounded-2xl font-bold hover:bg-[#00b8e6] transition shadow-lg shadow-cyan-500/20">
+                    すべてのレビューをまとめて投稿する
+                </button>
+                <a href="{{ route('top') }}" class="block text-center text-gray-400 text-sm hover:text-gray-600 py-2">
+                    スキップしてトップへ戻る
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
     document.querySelectorAll('.star-rating').forEach(container => {
         const stars = container.querySelectorAll('.star');
-        const input = container.nextElementSibling;
+        const input = container.closest('.text-center').querySelector('.rating-value');
 
         stars.forEach(star => {
             star.addEventListener('click', () => {

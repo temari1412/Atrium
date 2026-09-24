@@ -13,8 +13,24 @@ use App\Models\Tag;
 
 class ProductsController extends Controller
 {
+    /**
+     * 共通：凍結ユーザーのチェックを行うプライベートメソッド
+     */
+    private function checkSuspended()
+    {
+        $user = Auth::user();
+        // ユーザーが存在し、かつ is_suspended が true (凍結中) の場合
+        if ($user && isset($user->is_suspended) && $user->is_suspended) {
+            // 必要に応じてログアウトさせるか、エラーを返す
+            Auth::logout();
+            abort(403, 'アカウントが凍結されているため、この操作はできません。');
+        }
+    }
+
     public function edit($id = null)
     {
+        $this->checkSuspended(); // 凍結チェック
+        
         $user = Auth::user();
         
         $product = $id 
@@ -30,6 +46,8 @@ class ProductsController extends Controller
     // ① 新規作成時：DBには保存せずセッションに入れてプレビューへ飛ばす
     public function store(Request $request)
     {
+        $this->checkSuspended(); // 凍結チェック
+
         // リクエストに variant_id が来ているかログ出力で確認
         \Log::info('storeリクエストのvariant_id:', ['variant_id' => $request->variant_id]);
 
@@ -74,6 +92,8 @@ class ProductsController extends Controller
     // ② セッションから読み込んでプレビュー画面を表示
     public function showPreview()
     {
+        $this->checkSuspended(); // 凍結チェック
+
         $draft = session('draft_product');
         if (!$draft) {
             return redirect()->route('mypage')->with('error', 'プレビューデータが見つかりません。');
@@ -89,12 +109,13 @@ class ProductsController extends Controller
     // ③ 「この内容で投稿する」が押されたら初めてDBに保存
     public function publish(Request $request)
     {
+        $this->checkSuspended(); // 凍結チェック
+
         $draft = session('draft_product');
         if (!$draft) {
             return redirect()->route('mypage')->with('error', 'セッションが切れました。最初からやり直してください。');
         }
 
-        // 保存直前のデータとリクエストの状態をログ出力で確認
         \Log::info('publish保存前のdata:', $draft);
         \Log::info('publishリクエストのvariant_id:', ['variant_id' => $request->input('variant_id')]);
 
@@ -129,6 +150,8 @@ class ProductsController extends Controller
 
     public function updateProduct(Request $request, $id)
     {
+        $this->checkSuspended(); // 凍結チェック
+
         $product = Product::where('user_id', Auth::id())->findOrFail($id);
 
         $request->validate([
@@ -182,6 +205,8 @@ class ProductsController extends Controller
 
     public function destroy($id)
     {
+        $this->checkSuspended(); // 凍結チェック
+
         $product = Product::where('user_id', Auth::id())->findOrFail($id);
         
         if (!empty($product->image)) {
@@ -214,10 +239,14 @@ class ProductsController extends Controller
 
     public function show($id)
     {
+        // ★ 凍結されたユーザーのグッズ詳細ページを表示させないよう、userのリレーション条件(is_suspendedがfalse)を追加
         $product = Product::with(['tags', 'user', 'likes', 'reviews' => function($query) {
                 $query->whereIn('ai_status', ['public', 'pending']);
             }, 'reviews.user'])
             ->where('status', 'public')
+            ->whereHas('user', function($query) {
+                $query->where('is_suspended', false);
+            })
             ->findOrFail($id);
 
         $product->increment('views');
@@ -253,6 +282,8 @@ class ProductsController extends Controller
 
     public function update(Request $request)
     {
+        $this->checkSuspended(); // 凍結チェック
+
         $user = Auth::user();
 
         if ($request->filled('name')) {

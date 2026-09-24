@@ -84,6 +84,7 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/{review}', [ReviewController::class, 'update'])->name('update');
     });
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::post('/orders/{order}/reviews/batch', [ReviewController::class, 'storeBatch'])->name('reviews.storeBatch');
 
     // その他機能
     Route::post('/products/{id}/like', [LikeController::class, 'toggle'])->name('likes.toggle');

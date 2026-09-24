@@ -162,9 +162,10 @@
                 <h2 class="text-xl font-bold mb-8">作品一覧</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     @foreach($products as $product)
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group relative">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group relative flex flex-col">
+                        {{-- 削除・編集ボタン（本人のみ表示：カード全体リンクの上に重ねるため z-30 を指定） --}}
                         @if(Auth::id() === $user->id)
-                        <div class="absolute top-3 left-3 z-20 flex items-center gap-2">
+                        <div class="absolute top-3 left-3 z-30 flex items-center gap-2">
                             <form action="{{ route('products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('本当に削除しますか？');">
                                 @csrf 
                                 @method('DELETE')
@@ -181,30 +182,66 @@
                         </div>
                         @endif
 
-                        <div class="aspect-square bg-gray-200">
-                         <a href="{{ route('products.show', $product->id) }}"><img src="{{ str_starts_with($product->image, 'http') ? $product->image : Storage::disk('s3')->url($product->image) }}" class="object-cover w-full h-full"></a>
-                        </div>
-                        <div class="p-5">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs text-gray-400 font-medium">{{ $product->category }}</span>
-                                <div class="flex items-center gap-1 text-xs text-gray-500">
-                                    <svg class="w-4 h-4 text-rose-500 fill-current" viewBox="0 0 24 24">
-                                        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                    <span class="font-bold">{{ $product->likes()->count() }}</span>
+                        {{-- ★ カード全体をリンクにする（または画像からタイトル・タグまでを囲む） --}}
+                        <a href="{{ route('products.show', $product->id) }}" class="block flex-grow flex flex-col">
+                            <div class="aspect-square bg-gray-50 rounded-2xl relative overflow-hidden flex items-center justify-center p-4 border border-gray-100">
+                                @php
+                                    $category = $product->category ?? '';
+                                @endphp
+
+                                @if($category === '缶バッジ')
+                                    <div class="relative w-40 h-40 rounded-full flex items-center justify-center shadow-md">
+                                        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-gray-100 via-gray-300 to-gray-400 p-[2px] shadow-inner">
+                                            <div class="relative w-full h-full rounded-full overflow-hidden bg-white">
+                                                <div class="block w-full h-full">
+                                                    <img src="{{ str_starts_with($product->image, 'http') ? $product->image : Storage::disk('s3')->url($product->image) }}" class="w-full h-full object-cover rounded-full group-hover:scale-105 transition duration-300">
+                                                </div>
+                                                <div class="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/40 pointer-events-none rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    {{-- アクリルキーホルダー風（フレームのみ） --}}
+                                    <div class="relative flex items-center justify-center w-full h-full">
+                                        <div class="relative bg-white/80 backdrop-blur p-3 rounded-2xl shadow-sm border border-white ring-1 ring-gray-100 overflow-hidden max-h-full max-w-full flex items-center justify-center group-hover:scale-105 transition duration-300">
+                                            <div class="absolute inset-0 bg-gradient-to-tr from-white/20 via-transparent to-white/40 pointer-events-none z-10"></div>
+                                            <div class="block">
+                                                <img src="{{ str_starts_with($product->image, 'http') ? $product->image : Storage::disk('s3')->url($product->image) }}" alt="{{ $product->name }}" class="object-contain max-h-36 w-auto rounded-xl">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- 価格バッジ（右上） -->
+                                <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold shadow-sm text-fuchsia-600 border border-gray-100 z-20">
+                                    ¥{{ number_format($product->price) }}
                                 </div>
                             </div>
-                            <h4 class="font-bold text-gray-800 text-base mb-2 truncate">{{ $product->name }}</h4>
-                            @if($product->tags && $product->tags->count() > 0)
-                                <div class="flex flex-wrap gap-1 mt-2">
-                                    @foreach($product->tags as $tag)
-                                        <span class="text-[10px] bg-fuchsia-50 text-fuchsia-600 px-2 py-0.5 rounded-full font-medium">
-                                            #{{ $tag->name }}
-                                        </span>
-                                    @endforeach
+
+                            <div class="p-5 flex-grow flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs text-gray-400 font-medium">{{ $product->category }}</span>
+                                        <div class="flex items-center gap-1 text-xs text-gray-500">
+                                            <svg class="w-4 h-4 text-rose-500 fill-current" viewBox="0 0 24 24">
+                                                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            </svg>
+                                            <span class="font-bold">{{ $product->likes()->count() }}</span>
+                                        </div>
+                                    </div>
+                                    <h4 class="font-bold text-gray-800 text-base mb-2">{{ $product->name }}</h4>
                                 </div>
-                            @endif
-                        </div>
+                                @if($product->tags && $product->tags->count() > 0)
+                                    <div class="flex flex-wrap gap-1 mt-2">
+                                        @foreach($product->tags as $tag)
+                                            <span class="text-[10px] bg-fuchsia-50 text-fuchsia-600 px-2 py-0.5 rounded-full font-medium">
+                                                #{{ $tag->name }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </a>
                     </div>
                     @endforeach
                 </div>
@@ -215,7 +252,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                     
-                    <!-- ロゴ・ブランド紹介 -->
+                    <!-- ロゴ -->
                     <div class="md:col-span-1">
                         <a href="/" class="inline-block mb-4">
                             <img src="{{ asset('images/logo.png') }}" alt="Atrium Logo" class="h-10 w-auto">
@@ -245,7 +282,7 @@
                         </ul>
                     </div>
 
-                    <!-- リンクカラム 3 (SNSなど) -->
+                    <!-- リンクカラム  -->
                     <div>
                         <h5 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">公式SNS</h5>
                         <div class="flex space-x-4">
@@ -296,8 +333,8 @@
             @auth
                 <li><a href="{{ route('orders.history') }}" class="hover:text-fuchsia-400 transition">注文履歴</a></li>
                 <li><a href="{{ route('products.create') }}" class="hover:text-fuchsia-400 transition">グッズを作る</a></li>
-                
-                <li><a href="{{ route('dashboard') }}" class="hover:text-fuchsia-400 transition">ダッシュボード</a></li>        
+                <li><a href="{{ route('following') }}" class="hover:text-fuchsia-400 transition">フォロー一覧</a></li>
+                <li><a href="{{ route('dashboard') }}" class="hover:text-fuchsia-400 transition">ダッシュボード</a></li>
             @endauth
             
             <li class="pt-6 border-t border-gray-600">
@@ -306,7 +343,6 @@
                     <button type="submit" class="text-gray-400 hover:text-red-400 transition">ログアウト</button>
                 </form>
             </li>
-        </ul>
     </nav>
 
     <script>

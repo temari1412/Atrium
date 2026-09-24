@@ -18,7 +18,14 @@ class AuthController extends Controller
     public function register(Request $request) {
         $request->validate([
             'name' => ['required', 'string', 'max:30'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => [
+                'required', 
+                'string', 
+                'bail', 
+                'email:rfc,dns', 
+                'max:255', 
+                'unique:users'
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'birth_date' => ['nullable', 'date'],
             'gender' => ['nullable', 'string'],
@@ -27,12 +34,23 @@ class AuthController extends Controller
             'name.max' => '名前は30文字以内で入力してください。',
             'email.required' => 'メールアドレスを入力してください。',
             'email.email' => '有効なメールアドレス形式で入力してください。',
+            'email.dns' => '存在しないメールアドレスのドメインです。',
             'email.unique' => 'このメールアドレスはすでに登録されています。',
             'password.required' => 'パスワードを入力してください。',
             'password.min' => 'パスワードは8文字以上で入力してください。',
             'password.confirmed' => 'パスワードが確認用と一致していません。',
             'birth_date.date' => '生年月日は正しい日付で入力してください。',
         ]);
+
+        // ▼ 追加：よくあるタイポ・存在しない主要ドメインのチェック
+        $domain = substr(strrchr($request->email, "@"), 1);
+        $invalidDomains = ['gmai.com', 'gamil.com', 'gmaill.com', 'yaho.co.jp', 'yhoo.co.jp']; // 必要に応じて追加
+        
+        if (in_array(strtolower($domain), $invalidDomains)) {
+            return back()->withInput()->withErrors([
+                'email' => '有効なメールアドレスのドメインを入力してください（入力ミスがないかご確認ください）。',
+            ]);
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -45,7 +63,7 @@ class AuthController extends Controller
         Auth::login($user);
         return redirect()->route('register.completed');
     }
-
+    
     public function showCompleted() {
         $user = Auth::user();
         return view('auth.completed', compact('user'));
@@ -72,6 +90,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
+            // 凍結ユーザーのログインブロック
             if ($user->is_suspended) {
                 Auth::logout();
                 $request->session()->invalidate();
@@ -107,8 +126,6 @@ class AuthController extends Controller
         $user = Auth::user();
         return view('auth.mypage', compact('user'));
     }
-
-
 
     // パスワード変更画面の表示
     public function showForgotPassword()

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Review, Product};
+use App\Models\{Review, Product, Order};
 use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
@@ -64,6 +64,36 @@ class ReviewController extends Controller
 
         return redirect()->route('products.show', $id)
                          ->with('success', 'レビューを更新しました！');
+    }
+
+    // 注文完了画面からのレビュー一括保存
+    public function storeBatch(Request $request, $orderId)
+    {
+        $request->validate([
+            'reviews.*.rating' => 'required|integer|min:1|max:5',
+            'reviews.*.comment' => 'nullable|string|max:500',
+        ]);
+
+        $userId = Auth::id();
+
+        if ($request->has('reviews')) {
+            foreach ($request->reviews as $productId => $data) {
+                Review::updateOrCreate(
+                    [
+                        'user_id' => $userId,
+                        'product_id' => $productId,
+                    ],
+                    [
+                        'rating' => $data['rating'] ?? 5,
+                        'comment' => $data['comment'] ?? '', // ← ここを null から空文字に変更しました
+                        'ai_status' => 'public',
+                    ]
+                );
+            }
+        }
+
+        return redirect()->route('top')
+                         ->with('success', 'レビューをまとめて投稿しました！');
     }
 
     // 削除処理

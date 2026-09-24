@@ -13,7 +13,12 @@
     <!-- 検索フォーム ＆ ステータス絞り込み -->
     <form action="{{ route('admin.orders.index') }}" method="GET" class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="flex items-center space-x-3">
-            {{-- ステータス絞り込みプルダウン --}}
+            {{-- ▼ キーワード検索を左側に移動 --}}
+            <div class="relative">
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="注文ID、購入者名などで検索..." class="bg-gray-100 border-none rounded-full py-2 pl-4 pr-10 text-sm w-72 focus:ring-2 focus:ring-purple-200 focus:outline-none">
+            </div>
+
+            {{-- ▼ ステータス絞り込みプルダウンを右側に移動 --}}
             <select name="status" class="bg-gray-100 border-none rounded-full py-2 px-4 text-sm focus:ring-2 focus:ring-purple-200 focus:outline-none">
                 <option value="">すべてのステータス</option>
                 <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>pending（未処理）</option>
@@ -22,11 +27,6 @@
                 <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>completed（完了）</option>
                 <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>cancelled（キャンセル）</option>
             </select>
-
-            {{-- キーワード検索 --}}
-            <div class="relative">
-                <input type="text" name="q" value="{{ request('q') }}" placeholder="注文ID、購入者名などで検索..." class="bg-gray-100 border-none rounded-full py-2 pl-4 pr-10 text-sm w-72 focus:ring-2 focus:ring-purple-200 focus:outline-none">
-            </div>
 
             <button type="submit" class="px-4 py-2 bg-gray-800 hover:bg-black text-white rounded-full text-xs transition">
                 絞り込み
@@ -93,19 +93,17 @@
                             <span class="block text-xs text-gray-400">{{ $order->user->email ?? '' }}</span>
                         </td>
                         
-                        {{-- ★トップページと同じ完成後プレビュー＆商品情報を表示 --}}
+                        {{-- 完成後プレビュー＆商品情報を表示 --}}
                         <td class="p-3">
                             @foreach($order->orderItems as $item)
                                 <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-none">
                                     @php
                                         $category = $item->product->category ?? '';
-                                        // 注文アイテム側の画像（切り抜き後）を優先し、なければ商品画像を使用
                                         $imagePath = $item->image_path ?? $item->product->image ?? '';
                                         $imageUrl = $imagePath ? (str_starts_with($imagePath, 'http') ? $imagePath : Storage::disk('s3')->url($imagePath)) : '';
                                     @endphp
 
                                     @if($category === '缶バッジ')
-                                        {{-- ================= 缶バッジ風プレビュー ================= --}}
                                         <div class="relative w-14 h-14 rounded-full flex items-center justify-center shadow-md shrink-0 bg-white p-0.5">
                                             <div class="absolute inset-0 rounded-full bg-gradient-to-br from-gray-100 via-gray-300 to-gray-400 p-[2px]">
                                                 <div class="relative w-full h-full rounded-full overflow-hidden bg-white">
@@ -119,7 +117,6 @@
                                             </div>
                                         </div>
                                     @else
-                                        {{-- ================= アクキー風プレビュー ================= --}}
                                         <div class="relative shrink-0">
                                             <div class="relative inline-block bg-white p-1 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                                                 <div class="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/25 pointer-events-none z-10"></div>

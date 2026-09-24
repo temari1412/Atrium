@@ -39,7 +39,7 @@ class AdminController extends Controller
         
     }
 
-    // ユーザー一覧（名前・メールに加え、注文の配送先住所でも検索可能）
+    // ユーザー一覧（名前・メールに加え、注文の配送先住所やステータスで検索・絞り込み可能）
     public function usersIndex(Request $request)
     {
         $query = User::with('orders.orderItems.product');
@@ -55,6 +55,15 @@ class AdminController extends Controller
                              $orderQuery->where('shipping_address', 'LIKE', "%{$search}%");
                          });
             });
+        }
+
+        // ▼ 追加：ステータス（通常 / 凍結中）での絞り込み処理
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_suspended', false);
+            } elseif ($request->status === 'suspended') {
+                $query->where('is_suspended', true);
+            }
         }
 
         // IDの昇順に、1ページあたり10人ずつ取得（検索クエリを引き継ぐ）
@@ -118,7 +127,7 @@ class AdminController extends Controller
     {
         $query = Order::with('user', 'orderItems.product');
 
-        // ★追加：ステータスでの絞り込み処理
+        // ステータスでの絞り込み処理
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }

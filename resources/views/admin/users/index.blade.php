@@ -10,27 +10,39 @@
         </a>
     </div>
 
-    {{-- ▼ 検索フォーム ＆ 検索解除ボタン --}}
+    {{-- ▼ 検索フォーム ＆ ステータス絞り込み ＆ 検索解除ボタン --}}
     <div class="flex items-center space-x-3 mb-6">
-        <div class="relative">
-            <form action="{{ route('admin.users.index') }}" method="GET" class="flex items-center space-x-2">
-                <div class="relative">
-                    <button type="submit" class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="ユーザーを検索..." class="bg-gray-100 border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-purple-200 focus:outline-none">
-                </div>
+        <form action="{{ route('admin.users.index') }}" method="GET" class="flex flex-wrap items-center gap-2">
+            
+            {{-- キーワード検索インプット --}}
+            <div class="relative">
+                <button type="submit" class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="ユーザーを検索..." class="bg-gray-100 border-none rounded-full py-2 pl-10 pr-4 text-sm w-56 focus:ring-2 focus:ring-purple-200 focus:outline-none">
+            </div>
 
-                {{-- 検索キーワードが入力されているときだけ「検索解除」を表示 --}}
-                @if(request('q'))
-                    <a href="{{ route('admin.users.index') }}" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full text-xs font-bold transition">
-                        検索解除
-                    </a>
-                @endif
-            </form>
-        </div>
+            {{-- ステータス絞り込みセレクトボックス --}}
+            <select name="status" class="bg-gray-100 border-none rounded-full py-2 px-4 text-sm text-gray-700 focus:ring-2 focus:ring-purple-200 focus:outline-none">
+                <option value="">すべてのステータス</option>
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>通常</option>
+                <option value="suspended" {{ request('status') === 'suspended' ? 'selected' : '' }}>凍結中</option>
+            </select>
+
+            {{-- 絞り込みボタン --}}
+            <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-xs font-bold transition">
+                絞り込む
+            </button>
+
+            {{-- 検索キーワードまたはステータスが指定されているときだけ「検索解除」を表示 --}}
+            @if(request('q') || request('status'))
+                <a href="{{ route('admin.users.index') }}" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full text-xs font-bold transition">
+                    検索解除
+                </a>
+            @endif
+        </form>
     </div>
 
     {{-- 成功メッセージなどの表示 --}}
