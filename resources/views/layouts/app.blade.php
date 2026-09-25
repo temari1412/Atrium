@@ -244,5 +244,17 @@
             }
         });
     </script>
+
+{{-- 共通レイアウトの</body>の直前などに配置 --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // ページ内にあるすべての form タグに自動で novalidate を付与する
+            document.querySelectorAll('form').forEach(form => {
+                form.setAttribute('novalidate', 'true');
+            });
+        });
+    </script>
+</body>
+</html>
 </body>
 </html>

@@ -60,6 +60,17 @@
         <form action="{{ route('register') }}" method="POST" class="space-y-2.5">
             @csrf
             
+            {{-- ★ エラーメッセージを最上部に移動し、ログイン画面と同じ枠付きデザインに統一 --}}
+            @if ($errors->any())
+                <div class="bg-red-50 text-red-500 text-xs p-3 rounded-lg border border-red-200 mb-3">
+                    <ul class="list-disc list-inside space-y-0.5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <input type="text" name="name" placeholder="ユーザー名" value="{{ old('name') }}" required
                 class="input-field w-full rounded-lg py-2 px-4 text-gray-600">
 
@@ -90,24 +101,24 @@
                 </button>
             </div>
 
-@if ($errors->any())
-    <div class="text-red-500 text-xs mb-4">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-<div class="text-center mt-4">
-    <p class="text-[10px]  text-gray-600">
-        すでにアカウントをお持ちですか？ 
-        <a href="{{ route('login') }}" class="text-purple-600 hover:underline">ログインはこちら</a>
-    </p>
-</div>
+            <div class="text-center mt-4">
+                <p class="text-[10px] text-gray-600">
+                    すでにアカウントをお持ちですか？ 
+                    <a href="{{ route('login') }}" class="text-purple-600 hover:underline">ログインはこちら</a>
+                </p>
+            </div>
         </form>
 
     </div>
 
+    {{-- 共通レイアウトの</body>の直前などに配置 --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // ページ内にあるすべての form タグに自動で novalidate を付与する
+            document.querySelectorAll('form').forEach(form => {
+                form.setAttribute('novalidate', 'true');
+            });
+        });
+    </script>
 </body>
 </html>

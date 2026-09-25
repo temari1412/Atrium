@@ -38,6 +38,12 @@
             </button>
         </div>
     </form>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('form').forEach(form => {
+                form.setAttribute('novalidate', 'true');
+            });
+        });
+    </script>
 </div>
 @endsection

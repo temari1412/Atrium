@@ -15,8 +15,9 @@
 
     <div class="bg-white w-full max-w-[400px] rounded-[20px] shadow-2xl p-10 relative overflow-hidden">
         <div class="text-center mb-6">
-        <a href="{{ route('top') }}">
-        <img src="{{ asset('images/logo.png') }}" alt="Atrium" class="h-14 mx-auto mb-2"> </a>
+            <a href="{{ route('top') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="Atrium" class="h-14 mx-auto mb-2">
+            </a>
             <h1 class="text-[#a066aa] text-xl font-bold tracking-widest">サインイン</h1>
         </div>
 
@@ -33,7 +34,7 @@
             <button class="w-8 h-8 rounded flex items-center justify-center transition hover:opacity-70">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="w-6 h-6">
             </button>
-            {{-- Pixiv (Pアイコン) --}}
+            {{-- Pixiv --}}
             <button class="w-8 h-8 bg-[#0096fa] rounded-full flex items-center justify-center transition hover:opacity-70">
                 <span class="text-white text-xs font-bold">P</span>
             </button>
@@ -42,10 +43,10 @@
         <form action="{{ route('login') }}" method="POST" class="space-y-4">
             @csrf
 
-            {{-- エラーメッセージ --}}
+            {{-- ★ エラーメッセージ（上部に配置・デザイン統一） --}}
             @if ($errors->any())
-                <div class="bg-red-50 text-red-500 text-[10px] p-2 rounded-lg border border-red-200">
-                    <ul class="list-disc list-inside">
+                <div class="bg-red-50 text-red-500 text-xs p-3 rounded-lg border border-red-200">
+                    <ul class="list-disc list-inside space-y-0.5">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -54,12 +55,12 @@
             @endif
 
             <div>
-                <input type="email" name="email" placeholder="メールアドレス" value="{{ old('email') }}"
-                    class="w-full border-2 border-[#cc99cc] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-[#ff99ff] placeholder-[#cc99cc] text-gray-600 text-sm" required>
+                <input type="email" name="email" placeholder="メールアドレス" value="{{ old('email') }}" required
+                    class="w-full border-2 border-[#cc99cc] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-[#ff99ff] placeholder-[#cc99cc] text-gray-600 text-sm">
             </div>
             <div>
-                <input type="password" name="password" placeholder="パスワード" 
-                    class="w-full border-2 border-[#cc99cc] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-[#ff99ff] placeholder-[#cc99cc] text-gray-600 text-sm" required>
+                <input type="password" name="password" placeholder="パスワード" required
+                    class="w-full border-2 border-[#cc99cc] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-[#ff99ff] placeholder-[#cc99cc] text-gray-600 text-sm">
             </div>
 
             <div class="pt-4 text-center">
@@ -69,7 +70,6 @@
             </div>
         </form>
 
-        {{-- 条件分岐を外して直接リンクを表示 --}}
         <div class="mt-4 text-right">
             <a href="{{ route('password.request') }}" class="text-[10px] text-gray-400 hover:text-[#a066aa] transition-colors tracking-tighter">
                 パスワードをお忘れですか？
@@ -86,5 +86,12 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('form').forEach(form => {
+                form.setAttribute('novalidate', 'true');
+            });
+        });
+    </script>
 </body>
 </html>

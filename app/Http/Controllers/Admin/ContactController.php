@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class ContactController extends Controller
 {
     /*
-     * お問い合わせ一覧を表示する
+     * お問い合わせ一覧を表示する（検索機能付き）
      */
     public function index(Request $request)
     {
