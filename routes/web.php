@@ -34,7 +34,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 Route::get('admin/login', [AdminController::class, 'showLoginForm'])->name('admin.login');
 Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login.submit');
 
-// 管理者専用ルート（上部：ホームやユーザー管理など）
+// 管理者
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/home', [AdminController::class, 'home'])->name('home');
     Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
@@ -118,7 +118,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::get('/contacts', [AdminContactController::class, 'index'])->name('contacts.index');
     Route::get('/contacts/{contact}', [AdminContactController::class, 'show'])->name('contacts.show');
-    Route::patch('/contacts/{id}/status', [AdminContactController::class, 'updateStatus'])->name('contacts.updateStatus'); // ← 追加
+    Route::patch('/contacts/{id}/status', [AdminContactController::class, 'updateStatus'])->name('contacts.updateStatus');
 });
 
 // メール・問い合わせ
