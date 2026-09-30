@@ -26,7 +26,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </button>
-                                <input type="text" name="q" value="{{ request('q') }}" placeholder="グッズを探す" class="bg-gray-100 border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-purple-200 focus:outline-none">
+                                <input type="text" name="q" value="{{ request('q') }}" placeholder="ユーザー・グッズを探す" class="bg-gray-100 border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-purple-200 focus:outline-none">
                             </form>
                         </div>
 
@@ -266,7 +266,7 @@
                     <div>
                         <h5 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">マーケット</h5>
                         <ul class="space-y-3 text-xs text-gray-600">
-                            <li><a href="{{ route('search') }}" class="hover:text-fuchsia-500 transition">グッズを探す</a></li>
+                            <li><a href="{{ route('search') }}" class="hover:text-fuchsia-500 transition">ユーザー・グッズを探す</a></li>
                             <li><a href="{{ route('products.create') }}" class="hover:text-fuchsia-500 transition">グッズを作る</a></li>
                         </ul>
                     </div>

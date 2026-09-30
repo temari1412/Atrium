@@ -50,7 +50,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </button>
-                        <input type="text" name="q" value="{{ request('q') }}" placeholder="グッズを探す" class="bg-gray-100 border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-purple-200 focus:outline-none">
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="ユーザー・グッズを探す" class="bg-gray-100 border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-purple-200 focus:outline-none">
                     </form>
                 </div>
 
@@ -226,9 +226,8 @@
                                     </div>
                                 </div>
                             @else
-                                {{-- アクリルキーホルダー風（詳細ページ準拠のフレームのみ・金具なし） --}}
                                 <div class="relative flex items-center justify-center w-full h-full">
-                                    <div class="relative bg-white/80 backdrop-blur p-3 rounded-2xl shadow-sm border border-white ring-1 ring-gray-100 overflow-hidden max-h-full max-w-full flex items-center justify-center group-hover:scale-105 transition duration-300">
+                                    <div class="relative bg-white p-3 rounded-2xl shadow-sm border border-white ring-1 ring-gray-100 overflow-hidden max-h-full max-w-full flex items-center justify-center group-hover:scale-105 transition duration-300">
                                         <div class="absolute inset-0 bg-gradient-to-tr from-white/20 via-transparent to-white/40 pointer-events-none z-10"></div>
                                         <img src="{{ str_starts_with($product->image, 'http') ? $product->image : Storage::disk('s3')->url($product->image) }}" alt="{{ $product->name }}" class="object-contain max-h-36 w-auto rounded-xl">
                                     </div>
@@ -397,7 +396,7 @@
             <div>
                 <h5 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">マーケット</h5>
                 <ul class="space-y-3 text-xs text-gray-600">
-                    <li><a href="{{ route('search') }}" class="hover:text-fuchsia-500 transition">グッズを探す</a></li>
+                    <li><a href="{{ route('search') }}" class="hover:text-fuchsia-500 transition">ユーザー・グッズを探す</a></li>
                     <li><a href="{{ route('products.create') }}" class="hover:text-fuchsia-500 transition">グッズを作る</a></li>
                 </ul>
             </div>
@@ -508,34 +507,85 @@
 
         // 3. 無限シームレススクロールのセットアップ
         function setupInfiniteScroll(containerId) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
+        const container = document.getElementById(containerId);
+        if (!container) return;
 
-            const items = Array.from(container.children);
-            items.forEach(item => {
-                const clone = item.cloneNode(true);
-                container.appendChild(clone);
-            });
+        // 商品カードを複製
+        const items = Array.from(container.children);
 
-            let isPaused = false;
-            const speed = 0.9;
+        items.forEach(item => {
+            const clone = item.cloneNode(true);
+            container.appendChild(clone);
+        });
 
-            function step() {
-                if (!isPaused) {
-                    container.scrollLeft += speed;
-                    const halfWidth = container.scrollWidth / 2;
-                    if (container.scrollLeft >= halfWidth) {
-                        container.scrollLeft -= halfWidth;
-                    }
-                }
-                requestAnimationFrame(step);
-            }
+        let animationId = null;
+        let isVisible = false;
+        let isPaused = false;
 
-            container.addEventListener('mouseenter', () => { isPaused = true; });
-            container.addEventListener('mouseleave', () => { isPaused = false; });
+        const speed = 0.9;
 
-            requestAnimationFrame(step);
+    function step() {
+        if (!isVisible || isPaused) {
+            animationId = null;
+            return;
         }
+
+        container.scrollLeft += speed;
+
+        const halfWidth = container.scrollWidth / 2;
+
+        if (container.scrollLeft >= halfWidth) {
+            container.scrollLeft -= halfWidth;
+        }
+
+        animationId = requestAnimationFrame(step);
+    }
+
+    function startAnimation() {
+        if (animationId !== null) return;
+        animationId = requestAnimationFrame(step);
+    }
+
+    function stopAnimation() {
+        if (animationId !== null) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+    }
+
+    // 画面内に入ったときだけスクロール開始
+    const observer = new IntersectionObserver(
+        entries => {
+            const entry = entries[0];
+
+            isVisible = entry.isIntersecting;
+
+            if (isVisible) {
+                startAnimation();
+            } else {
+                stopAnimation();
+            }
+        },
+        {
+            threshold: 0.1
+        }
+    );
+
+    observer.observe(container);
+
+    // マウスを乗せたら一時停止
+    container.addEventListener('mouseenter', () => {
+        isPaused = true;
+    });
+
+    container.addEventListener('mouseleave', () => {
+        isPaused = false;
+
+        if (isVisible) {
+            startAnimation();
+        }
+    });
+}
 
         setupInfiniteScroll('recommend-scroll');
         setupInfiniteScroll('ranking-scroll');

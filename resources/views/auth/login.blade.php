@@ -28,15 +28,15 @@
             </button>
             {{-- X (Twitter) --}}
             <button class="w-8 h-8 bg-black rounded flex items-center justify-center transition hover:opacity-70">
-                <span class="text-white text-xs font-bold">X</span>
+                <img src="{{ asset('images/X_logo.svg') }}"alt="X"class="w-5 h-5">
             </button>
             {{-- Instagram --}}
             <button class="w-8 h-8 rounded flex items-center justify-center transition hover:opacity-70">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="w-6 h-6">
             </button>
             {{-- Pixiv --}}
-            <button class="w-8 h-8 bg-[#0096fa] rounded-full flex items-center justify-center transition hover:opacity-70">
-                <span class="text-white text-xs font-bold">P</span>
+            <button class="w-8 h-8 flex items-center justify-center transition hover:opacity-70">
+            <img src="{{ asset('images/logo_icon.png') }}"alt="pixiv"class="w-7 h-7">    
             </button>
         </div>
 

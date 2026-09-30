@@ -17,13 +17,15 @@ class LikeController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $userId = Auth::id();
         $user = Auth::user();
+        $userId = $user->id;
+
+        // 先に商品の存在確認を行う（存在しない場合は404を返す）
+        $product = Product::findOrFail($productId);
+
         $existingLike = Like::where('user_id', $userId)
                             ->where('product_id', $productId)
                             ->first();
-
-        $product = Product::findOrFail($productId);
 
         if ($existingLike) {
             $existingLike->delete();
@@ -31,7 +33,7 @@ class LikeController extends Controller
         } else {
             Like::create([
                 'user_id' => $userId,
-                'product_id' => $productId
+                'product_id' => $productId,
             ]);
             $liked = true;
 
@@ -52,8 +54,6 @@ class LikeController extends Controller
                 Log::error('Like notification error: ' . $e->getMessage());
             }
         }
-
-        $product->refresh();
 
         return response()->json([
             'liked' => $liked,

@@ -43,8 +43,6 @@ class Product extends Model
     {
         return $this->hasMany(Review::class);
     }
-
-    // ▼ 追加：タグとの多対多のリレーション ▼
     public function tags()
     {
         return $this->belongsToMany(Tag::class);

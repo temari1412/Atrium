@@ -24,7 +24,7 @@ class AuthController extends Controller
                 'bail', 
                 'email:rfc,dns', 
                 'max:255', 
-                'unique:users'
+                'unique:users,email'
             ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'birth_date' => ['nullable', 'date'],
@@ -42,9 +42,8 @@ class AuthController extends Controller
             'birth_date.date' => '生年月日は正しい日付で入力してください。',
         ]);
 
-        // ▼ 追加：よくあるタイポ・存在しない主要ドメインのチェック
         $domain = substr(strrchr($request->email, "@"), 1);
-        $invalidDomains = ['gmai.com', 'gamil.com', 'gmaill.com', 'yaho.co.jp', 'yhoo.co.jp']; // 必要に応じて追加
+        $invalidDomains = ['gmai.com', 'gamil.com', 'gmaill.com', 'yaho.co.jp', 'yhoo.co.jp']; 
         
         if (in_array(strtolower($domain), $invalidDomains)) {
             return back()->withInput()->withErrors([
@@ -147,10 +146,25 @@ class AuthController extends Controller
             $request->only('email')
         );
 
-        return $status == Password::RESET_LINK_SENT
-            ? back()->with('status', 'パスワード再設定リンクをメールに送信しました。')
-            : back()->withErrors(['email' => __($status)]);
+        if ($status == Password::RESET_LINK_SENT) {
+            return back()->with(
+                'status',
+                'パスワード再設定リンクをメールに送信しました。'
+            );
+        }
+
+        if ($status == Password::INVALID_USER) {
+            return back()->withErrors([
+                'email' => 'このメールアドレスは登録されていません。'
+            ])->withInput();
+        }
+
+        return back()->withErrors([
+            'email' => 'パスワード再設定メールを送信できませんでした。しばらくしてからもう一度お試しください。'
+        ])->withInput();
     }
+
+
 
     // パスワード再設定画面の表示
     public function showResetPassword(Request $request, $token)

@@ -3,34 +3,43 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Message extends Model
 {
     protected $fillable = [
-        'user_id', 
-        'to_user_id', 
-        'from_user_id', 
-        'type', 
-        'title', 
-        'message', 
-        'body', 
-        'user_image', 
-        'url', 
-        'is_read'
+        'user_id',
+        'to_user_id',
+        'from_user_id',
+        'type',
+        'title',
+        'message',
+        'body',
+        'user_image',
+        'url',
+        'is_read',
     ];
 
-    public static function send($userId, $type, $title, $body, $userImage = null, $url = null, $fromUserId = null)
-    {
+    public static function send(
+        $userId,
+        $type,
+        $title,
+        $body,
+        $userImage = null,
+        $url = null,
+        $fromUserId = null
+    ) {
         return self::create([
             'user_id'      => $userId,
             'to_user_id'   => $userId,
-            'from_user_id' => $fromUserId ?? Auth::id() ?? 1, // 送信者IDが取れない場合の安全策
+            'from_user_id' => $fromUserId ?? Auth::id(),
             'type'         => $type,
             'title'        => $title,
-            'message'      => $body, // データベースの必須項目「message」に本文をセット
+            'message'      => $body,
             'body'         => $body,
             'user_image'   => $userImage,
             'url'          => $url,
+            'is_read'      => false,
             'created_at'   => now(),
             'updated_at'   => now(),
         ]);

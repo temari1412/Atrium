@@ -124,4 +124,3 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 // メール・問い合わせ
 Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
-
