@@ -10,7 +10,7 @@ class Review extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'user_id', 'rating', 'comment', 'ai_status'];
+    protected $fillable = ['product_id', 'user_id', 'rating', 'comment'];
 
     /**
      * comment属性のアクセサ（取得時に自動でNGワードを伏せ字にする）

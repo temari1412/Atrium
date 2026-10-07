@@ -138,6 +138,11 @@
                             </span>
                         @endif
                     </div>
+                    @if($user->introduction)
+                        <p class="mt-3 text-sm text-gray-600 whitespace-pre-line max-w-xl text-center">
+                            {{ $user->introduction }}
+                        </p>
+                    @endif
                     
                     @if(Auth::id() === $user->id)
                         <a href="{{ route('profile.edit') }}" class="mt-4 bg-gray-800 text-white px-8 py-2 rounded-full text-sm font-bold hover:bg-black transition">プロフィールを編集</a>
@@ -305,8 +310,8 @@
         </footer>
     </div>
 
-    <!-- ▼ サイドメニュー ▼ -->
-    <nav class="fixed top-0 right-0 h-screen bg-[#424242]/90 text-gray-100 p-8 z-50 flex flex-col w-[300px] transition-transform duration-300 translate-x-full" id="nav-menu">        
+<!-- ▼ サイドメニュー ▼ -->
+<nav class="fixed top-0 right-0 h-screen bg-[#424242]/90 text-gray-100 p-8 z-50 flex flex-col w-[300px] transition-transform duration-300 translate-x-full" id="nav-menu">        
         <div class="h-40"></div> 
         
         <div class="absolute top-6 right-6">
@@ -320,14 +325,20 @@
         <ul class="space-y-6 text-sm font-medium">
             <li><a href="/" class="hover:text-fuchsia-400 transition">トップページ・検索</a></li>
             <li><a href="{{ route('mypage') }}" class="hover:text-fuchsia-400 transition">マイページ</a></li>
+            {{-- メッセージリンク（バッジ付き） --}}
             <li>
                 <a href="{{ route('messages.index') }}" class="flex items-center justify-between hover:text-fuchsia-400 transition">
                     <span>通知一覧</span>
-                    @if(isset($unreadMessageCount) && $unreadMessageCount > 0)
-                        <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                            {{ $unreadMessageCount > 9 ? '9+' : $unreadMessageCount }}
-                        </span>
-                    @endif
+                    @auth
+                        @php
+                            $unreadCount = Auth::user()->messages()->where('is_read', false)->count();
+                        @endphp
+                        @if($unreadCount > 0)
+                            <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                            </span>
+                        @endif
+                    @endauth
                 </a>
             </li>
             @auth
@@ -343,6 +354,7 @@
                     <button type="submit" class="text-gray-400 hover:text-red-400 transition">ログアウト</button>
                 </form>
             </li>
+        </ul> <!-- ← ここに </ul> を追加しました！ -->
     </nav>
 
     <script>

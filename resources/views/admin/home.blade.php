@@ -19,13 +19,17 @@
         <a href="{{ route('admin.users.index') }}" class="w-full py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition border border-gray-200 shadow-sm text-sm block">            
             ユーザー一覧
         </a>
+        {{-- 商品一覧・管理ボタン --}} 
+        <a href="{{ route('admin.products.index') }}" class="w-full py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition border border-gray-200 shadow-sm text-sm block"> 
+            商品一覧・管理 
+        </a>
 
         {{-- 注文一覧・管理ボタン --}}
         <a href="{{ route('admin.orders.index') }}" class="w-full py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition border border-gray-200 shadow-sm text-sm block">            
             注文一覧・管理
         </a>
 
-        {{-- ▼ 追加：お問い合わせ管理ボタン --}}
+        {{-- お問い合わせ管理ボタン --}}
         <a href="{{ route('admin.contacts.index') }}" class="w-full py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition border border-gray-200 shadow-sm text-sm block">            
             お問い合わせ管理
         </a>

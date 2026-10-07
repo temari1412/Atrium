@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('body');
             $table->string('user_image')->nullable();
             $table->boolean('is_read')->default(false);
+            $table->string('url')->nullable();
             $table->timestamps();
         });
     }

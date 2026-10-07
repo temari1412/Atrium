@@ -10,7 +10,13 @@ class UserController extends Controller
     public function show(User $user)
     {
         // そのユーザーの作品を取得
-        $products = $user->products()->latest()->get();
+        $products = $user->products()
+        ->where('status', 'public')
+        ->whereHas('user', function ($query) {
+            $query->where('is_suspended', false);//凍結ユーザー除外
+        })
+        ->latest()
+        ->get();
         
         $navMenus = [
             ['title' => 'トップページ・検索', 'url' => route('top')],

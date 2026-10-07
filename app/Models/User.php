@@ -29,9 +29,11 @@ class User extends Authenticatable
     public function getGenerationAttribute()
     {
         if (!$this->birth_date) return '未設定';
-        
-        $year = Carbon::parse($this->birth_date)->year;
-        $decade = floor(($year % 100) / 10) * 10;
+
+        $birthDate = Carbon::parse($this->birth_date);//今日の日付を基準にして現在の年齢を計算
+        $age = $birthDate->age;
+        $decade = floor($age / 10) * 10;
+
         return $decade . '代';
     }
     public function messages()

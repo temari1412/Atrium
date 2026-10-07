@@ -34,16 +34,34 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 Route::get('admin/login', [AdminController::class, 'showLoginForm'])->name('admin.login');
 Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login.submit');
 
-// 管理者
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+// 管理者専用ルート（認証 ＋ 管理者権限が必要）
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/home', [AdminController::class, 'home'])->name('home');
     Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
     
+    // ユーザー管理
     Route::get('/users', [AdminController::class, 'usersIndex'])->name('users.index');
     Route::post('/users/{id}/toggle-suspend', [AdminController::class, 'toggleSuspend'])->name('users.toggleSuspend');
 
+    // 商品管理
+    Route::get('/products', [AdminController::class, 'productsIndex'])->name('products.index');
+    Route::post('/products/{id}/toggle-status', [AdminController::class, 'toggleProductStatus'])->name('products.toggleStatus');
+    Route::delete('/products/{id}', [AdminController::class, 'productDestroy'])->name('products.destroy');
+
+    // レビュー管理
     Route::get('/reviews', [AdminController::class, 'reviewsIndex'])->name('reviews.index');
     Route::delete('/reviews/{id}', [AdminController::class, 'reviewDestroy'])->name('reviews.destroy');
+
+    // 注文管理
+    Route::get('/orders', [AdminController::class, 'ordersIndex'])->name('orders.index');
+    Route::post('/orders/export', [AdminController::class, 'exportOrdersCsv'])->name('orders.export');
+    Route::get('/orders/{id}', [AdminController::class, 'orderShow'])->name('orders.show');
+    Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.updateStatus');
+
+    // お問い合わせ管理
+    Route::get('/contacts', [AdminContactController::class, 'index'])->name('contacts.index');
+    Route::get('/contacts/{contact}', [AdminContactController::class, 'show'])->name('contacts.show');
+    Route::patch('/contacts/{id}/status', [AdminContactController::class, 'updateStatus'])->name('contacts.updateStatus');
 });
 
 //  認証不要
@@ -69,7 +87,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [ProductsController::class, 'store'])->name('store');
         Route::put('/{id}', [ProductsController::class, 'updateProduct'])->name('update')->where('id', '[0-9]+');
         
-        Route::post('/preview', [ProductsController::class, 'preview'])->name('preview'); 
+        Route::post('/preview', [ProductsController::class, 'showPreview'])->name('preview');        
         Route::get('/preview/view', [ProductsController::class, 'showPreview'])->name('preview.view'); 
         Route::post('/publish', [ProductsController::class, 'publish'])->name('publish'); 
 
@@ -104,21 +122,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout/success/{product}', [OrderController::class, 'success'])->name('checkout.success');
     Route::post('/cart/checkout', [OrderController::class, 'cartCheckout'])->name('cart.checkout');
     Route::get('/cart/checkout/success', [OrderController::class, 'cartSuccess'])->name('cart.checkout.success');
-});
-
-// 管理者専用
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    Route::get('/orders', [AdminController::class, 'ordersIndex'])->name('orders.index');
-    Route::post('/orders/export', [AdminController::class, 'exportOrdersCsv'])->name('orders.export');
-    Route::get('/orders/{id}', [AdminController::class, 'orderShow'])->name('orders.show');
-    Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.updateStatus');
-});
-
-// 管理者用お問い合わせ管理
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    Route::get('/contacts', [AdminContactController::class, 'index'])->name('contacts.index');
-    Route::get('/contacts/{contact}', [AdminContactController::class, 'show'])->name('contacts.show');
-    Route::patch('/contacts/{id}/status', [AdminContactController::class, 'updateStatus'])->name('contacts.updateStatus');
 });
 
 // メール・問い合わせ

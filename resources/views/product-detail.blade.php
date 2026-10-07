@@ -146,6 +146,95 @@
         </div>
     </div>
 
+    {{-- 同じ出品者の他の作品 --}}
+    @if($otherProducts->count() > 0)
+        <div class="mt-16">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold">他の作品</h2>
+                <a href="{{ route('users.show', $product->user->id) }}" class="text-sm text-fuchsia-500 hover:text-fuchsia-700">
+                    他の作品をすべて見る →
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                @foreach($otherProducts as $otherProduct)
+                    <a href="{{ route('products.show', $otherProduct->id) }}" class="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition">
+
+                        {{-- 商品画像 --}}
+                        <div class="aspect-square bg-white flex items-center justify-center p-6">
+
+                            @if($otherProduct->category === '缶バッジ')
+
+                                {{-- ================= 缶バッジ ================= --}}
+                                <div class="relative w-44 h-44 rounded-full flex items-center justify-center shadow-[0_10px_20px_rgba(0,0,0,0.15),0_4px_8px_rgba(0,0,0,0.1)]">
+
+                                    {{-- 金属リム --}}
+                                    <div class="absolute inset-0 rounded-full bg-gradient-to-br from-gray-100 via-gray-300 to-gray-400 p-[3px] shadow-inner">
+
+                                        {{-- 缶バッジ本体 --}}
+                                        <div class="relative w-full h-full rounded-full overflow-hidden bg-white">
+
+                                            <img
+                                                src="{{ str_starts_with($otherProduct->image, 'http') ? $otherProduct->image : Storage::disk('s3')->url($otherProduct->image) }}"
+                                                alt="{{ $otherProduct->name }}"
+                                                class="w-full h-full object-cover rounded-full group-hover:scale-105 transition duration-300"
+                                            >
+
+                                            {{-- ドーム状の光 --}}
+                                            <div class="absolute inset-0 bg-gradient-to-tr from-black/15 via-transparent to-white/50 pointer-events-none rounded-full"></div>
+
+                                            {{-- 光沢 --}}
+                                            <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-white/70 via-white/10 to-transparent rotate-45 pointer-events-none rounded-full blur-[1px]"></div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            @else
+
+                                {{-- ================= アクキー ================= --}}
+                                <div class="relative">
+
+                                    {{-- アクキー本体 --}}
+                                    <div class="relative inline-block bg-white p-2 rounded-[1.5rem] shadow-xl border-2 border-white ring-2 ring-pink-100 overflow-hidden">
+
+                                        {{-- アクリル表面のツヤ --}}
+                                        <div class="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/20 pointer-events-none z-10"></div>
+
+                                        {{-- 商品画像 --}}
+                                        <img
+                                            src="{{ str_starts_with($otherProduct->image, 'http') ? $otherProduct->image : Storage::disk('s3')->url($otherProduct->image) }}"
+                                            alt="{{ $otherProduct->name }}"
+                                            class="max-h-44 w-auto object-contain rounded-xl block group-hover:scale-105 transition duration-300"
+                                        >
+
+                                    </div>
+                                </div>
+
+                            @endif
+
+                        </div>
+
+                        {{-- 商品情報 --}}
+                        <div class="border-t border-gray-100 p-4">
+                            <p class="text-xs text-gray-400">{{ $otherProduct->category }}</p>
+
+                            <p class="font-bold text-gray-800 mt-1 truncate group-hover:text-fuchsia-500 transition">
+                                {{ $otherProduct->name }}
+                            </p>
+
+                            <p class="text-sm text-fuchsia-500 font-bold mt-2">
+                                ¥{{ number_format($otherProduct->price) }}
+                                <span class="text-xs text-gray-400 font-normal">(税込)</span>
+                            </p>
+                        </div>
+
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12">
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
             <h2 class="text-xl font-bold mb-6">レビュー</h2>
@@ -161,7 +250,7 @@
                                 @if(Auth::id() === $review->user_id)
                                     <div class="flex items-center gap-3">
                                         <button onclick="document.getElementById('review-modal').classList.remove('hidden')" class="text-gray-400 hover:text-fuchsia-500 transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                         </button>
                                         <form action="{{ route('reviews.destroy', $review->id) }}" method="POST" onsubmit="return confirm('本当に削除しますか？');">
                                             @csrf 
@@ -232,7 +321,7 @@
                     @for($i = 1; $i <= 5; $i++)
                         <svg class="star w-10 h-10 transition-colors {{ ($i <= ($existingReview->rating ?? 0)) ? 'text-yellow-400' : 'text-gray-300' }} hover:text-yellow-400" 
                              data-value="{{ $i }}" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c-.3-.921-.755-1.688-1.54-1.118l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118-1.175 0-2.8 2.034c-0.784 0.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                     @endfor
                 </div>
@@ -350,7 +439,7 @@
                         followButton.textContent = 'フォロー中';
                         followButton.className = 'px-4 py-2 rounded-xl text-sm font-bold border transition bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200';
                     } else {
-                        followButton.textContent = 'フォローする';
+               ƒ√         followButton.textContent = 'フォローする';
                         followButton.className = 'px-4 py-2 rounded-xl text-sm font-bold border transition bg-fuchsia-500 text-white border-transparent hover:bg-fuchsia-600';
                     }
                 } catch (error) {

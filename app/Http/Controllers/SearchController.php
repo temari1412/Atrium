@@ -10,14 +10,18 @@ class SearchController extends Controller
 {
     public function index(Request $request)
     {
-        $keyword = $request->input('q') ?? $request->input('keyword');
-        $tagName = $request->input('tag');
+        $keyword = $request->input('q') ?? $request->input('keyword');//検索キーワードを取得
+        $tagName = $request->input('tag');//タグ名取得
 
         // 商品の検索クエリ
-        $productsQuery = Product::with('tags');
+        $productsQuery = Product::with('tags')
+        ->where('status', 'public')
+        ->whereHas('user', function ($query) {
+            $query->where('is_suspended', false);
+        });
 
         // キーワード検索
-        if (!empty($keyword)) {
+        if (!empty($keyword)) {// キーワードが存在する場合の処理
 
             // #を除去
             $cleanKeyword = ltrim($keyword, '#');
@@ -26,14 +30,13 @@ class SearchController extends Controller
             $keywords = preg_split('/[\s　]+/u', $cleanKeyword, -1, PREG_SPLIT_NO_EMPTY);
 
             // キーワードごとにAND検索
-            foreach ($keywords as $word) {
+            foreach ($keywords as $word) {// 分割したキーワードごとの処理
 
                 $productsQuery->where(function ($query) use ($word) {
-
+            //分解したキーワード毎に、以下のいずれかに部分一致（like）するかを検索
                     $query->where('name', 'like', "%{$word}%")
                           ->orWhere('description', 'like', "%{$word}%")
                           ->orWhere('category', 'like', "%{$word}%")
-                          ->orWhere('hashtags', 'like', "%{$word}%")
                           ->orWhereHas('tags', function ($tagQuery) use ($word) {
                               $tagQuery->where('name', 'like', "%{$word}%");
                           });
@@ -47,6 +50,7 @@ class SearchController extends Controller
 
             $productsQuery->whereHas('tags', function ($query) use ($tagName) {
                 $query->where('name', $tagName);
+                //もしタグ名が指定されていれば（＝タグがクリックされていたら）、そのタグが紐づいている商品だけに絞り込みを行いにいく指示
             });
 
         }
@@ -55,7 +59,7 @@ class SearchController extends Controller
 
         // ユーザー（クリエイター）の検索
         $users = User::when($keyword, function ($query, $keyword) {
-
+            //もし $keyword に値が入っていれば、その中の処理（ユーザー名の絞り込み）を実行 入ってなければスルー
             $keywords = preg_split(
                 '/[\s　]+/u',
                 $keyword,

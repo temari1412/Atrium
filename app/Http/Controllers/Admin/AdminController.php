@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Review;
 use App\Models\Order;
+use App\Models\Product;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminController extends Controller
@@ -88,6 +89,69 @@ class AdminController extends Controller
 
         $statusMessage = $user->is_suspended ? '凍結しました。' : '凍結を解除しました。';
         return back()->with('success', "ユーザー「{$user->name}」を{$statusMessage}");
+    }
+
+    // 商品一覧を表示する処理
+    public function productsIndex(Request $request)
+    {
+        $query = Product::with('user');
+
+        // 検索ワードがある場合
+        if ($request->filled('q')) {
+            $search = $request->input('q');
+
+            $query->where(function($qBuilder) use ($search) {
+                $qBuilder->where('name', 'LIKE', "%{$search}%")
+                         ->orWhere('description', 'LIKE', "%{$search}%")
+                         ->orWhereHas('user', function($userQuery) use ($search) {
+                             $userQuery->where('name', 'LIKE', "%{$search}%");
+                         });
+            });
+        }
+
+        // 公開 / 非公開で絞り込み
+        if ($request->filled('status')) {
+            if ($request->status === 'public') {
+                $query->where('status', 'public');
+            } elseif ($request->status === 'draft') {
+                $query->where('status', 'draft');
+            }
+        }
+
+        // 1ページ10商品ずつ取得
+        $products = $query->latest()
+            ->paginate(10)
+            ->appends($request->query());
+
+        return view('admin.products.index', compact('products'));
+    }
+
+    // 商品の公開・非公開を切り替える処理
+    public function toggleProductStatus($id)
+    {
+        $product = Product::findOrFail($id);
+
+        // 公開中なら非公開、非公開なら公開にする
+        $product->status = $product->status === 'public' ? 'draft' : 'public';
+        $product->save();
+
+        $statusMessage = $product->status === 'public'
+            ? '公開しました。'
+            : '非公開にしました。';
+
+        return back()->with('success', "商品「{$product->name}」を{$statusMessage}");
+    }
+
+    // 管理者による商品削除
+    public function productDestroy($id)
+    {
+        $product = Product::findOrFail($id);
+        $productName = $product->name;
+
+        // SoftDeletesなので完全削除ではなく論理削除
+        $product->delete();
+
+        return back()->with('success', "商品「{$productName}」を削除しました。");
     }
 
     // レビュー一覧を表示する処理（検索機能付き）

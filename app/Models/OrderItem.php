@@ -17,6 +17,6 @@ class OrderItem extends Model
     // 商品とのリレーションを追加
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->withTrashed();
     }
 }

@@ -15,7 +15,7 @@ class TopPageController extends Controller
         // 1. おすすめアイテム（凍結ユーザーのグッズを除外）
         $recommendedProducts = Product::with(['user', 'tags'])
                     ->withCount('likes')
-                    ->whereIn('status', ['public', 'published'])
+                    ->where('status', 'public')
                     ->whereHas('user', function ($query) {
                         $query->where('is_suspended', false);
                     })
@@ -26,7 +26,7 @@ class TopPageController extends Controller
         // 2. 人気ランキング（凍結ユーザーのグッズを除外）
         $rankingProducts = Product::with(['user', 'tags'])
                     ->withCount('likes')
-                    ->whereIn('status', ['public', 'published'])
+                    ->where('status', 'public')
                     ->whereHas('user', function ($query) {
                         $query->where('is_suspended', false);
                     })
@@ -41,7 +41,7 @@ class TopPageController extends Controller
 
         try {
             $hashtags = Tag::whereHas('products', function ($query) use ($now) {
-                            $query->whereIn('status', ['public', 'published'])
+                            $query->where('status', 'public')
                                   ->whereYear('products.created_at', $now->year)
                                   ->whereMonth('products.created_at', $now->month)
                                   ->whereHas('user', function ($q) {
@@ -49,7 +49,7 @@ class TopPageController extends Controller
                                   });
                         })
                         ->withCount(['products' => function ($query) use ($now) {
-                            $query->whereIn('status', ['public', 'published'])
+                            $query->where('status', 'public')
                                   ->whereYear('products.created_at', $now->year)
                                   ->whereMonth('products.created_at', $now->month)
                                   ->whereHas('user', function ($q) {
@@ -65,21 +65,33 @@ class TopPageController extends Controller
         }
 
         // フォールバック
+        // 今月のタグがない場合も、公開中の商品に紐づいているタグだけを表示
         if ($hashtags->isEmpty()) {
-            $hashtags = Tag::take(4)->pluck('name');
+            $hashtags = Tag::whereHas('products', function ($query) {
+                            $query->where('status', 'public')
+                                  ->whereHas('user', function ($q) {
+                                      $q->where('is_suspended', false);
+                                  });
+                        })
+                        ->take(4)
+                        ->pluck('name');
+
             if ($hashtags->isEmpty()) {
                 $hashtags = collect(['ポストカード', 'キーホルダー', 'ステッカー', 'アクリルグッズ']);
             }
         }
 
         // 4. 運営おすすめユーザー（管理者と凍結ユーザーを除外）
-        $featuredCreators = User::withCount('products')
-                    ->where('is_admin', 0)
-                    ->where('is_suspended', false) // ★ 追加：凍結されたユーザーを除外
-                    ->orderByDesc('products_count')
-                    ->take(3)
-                    ->get();
+        $featuredCreators = User::withCount(['products' => function ($query) {
+            $query->where('status', 'public');
+        }])
+            ->where('is_admin', 0)
+            ->where('is_suspended', false)
+            ->orderByDesc('products_count')
+            ->take(3)
+            ->get();
    
         return view('top', compact('recommendedProducts', 'rankingProducts', 'hashtags', 'featuredCreators'));
     }
 }
+

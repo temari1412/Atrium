@@ -37,7 +37,12 @@ class CartController extends Controller
     // カートに商品を追加（このメソッドを追加してください）
     public function store(Request $request, $productId)
     {
-        $product = Product::findOrFail($productId);
+        $product = Product::where('id', $productId)
+                  ->where('status', 'public')
+                  ->whereHas('user', function ($query) {
+                      $query->where('is_suspended', false);
+                  })
+                  ->firstOrFail();
 
         $cart = Cart::firstOrNew([
             'user_id' => Auth::id(),

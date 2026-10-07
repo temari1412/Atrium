@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('image');
             $table->string('status')->default('draft');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
     /**

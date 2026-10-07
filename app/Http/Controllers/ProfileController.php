@@ -20,6 +20,7 @@ class ProfileController extends Controller
         // 1. バリデーション（nameをsometimesにして、画像単体送信時にも弾かれないように修正）
         $request->validate([
             'name'         => 'sometimes|required|string|max:255',
+            'introduction' => 'nullable|string|max:255',
             'icon_image'   => 'nullable|image',
             'header_image' => 'nullable|image',
         ]);
@@ -29,7 +30,12 @@ class ProfileController extends Controller
             $user->name = $request->name;
         }
 
-        // 3. アイコン画像の処理
+        // 3. 自己紹介の更新処理
+        if ($request->has('introduction')) {
+            $user->introduction = $request->input('introduction');
+        }
+
+        // 4. アイコン画像の処理
         if ($request->hasFile('icon_image')) {
             if ($user->icon_image && !str_starts_with($user->icon_image, 'http')) {
                 Storage::disk('s3')->delete($user->icon_image);
@@ -38,7 +44,7 @@ class ProfileController extends Controller
             $user->icon_image = $path;
         }
 
-        // 4. ヘッダー画像の処理
+        // 5. ヘッダー画像の処理
         if ($request->hasFile('header_image')) {
             if ($user->header_image && !str_starts_with($user->header_image, 'http')) {
                 Storage::disk('s3')->delete($user->header_image);

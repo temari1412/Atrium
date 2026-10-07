@@ -21,7 +21,7 @@ class ProductSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'icon_image' => '73D1DAFB-24AF-4CA3-AC83-A2E42DB80961.jpg',          // アイコン画像
                 'header_image' => '5AB6FA6E-241F-42F2-B746-6462CEA8415E.jpg', // ヘッダー背景画像
-                'is_featured' => true,                // ★運営おすすめに設定！
+                'is_featured' => true,                // ★運営おすすめに設定
             ]
         );
 
@@ -33,7 +33,7 @@ class ProductSeeder extends Seeder
                 'password' => Hash::make('4869467080w'),
                 'icon_image' => '90528723_p1_master1200.jpg',
                 'header_image' => '90528723_p2_master1200.jpg',
-                'is_featured' => true,                // ★運営おすすめに設定！
+                'is_featured' => true,                // ★運営おすすめに設定
             ]
         );
 
@@ -45,14 +45,14 @@ class ProductSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'icon_image' => 'icon1.jpg',
                 'header_image' => '90704551_p0_square1200.jpg',
-                'is_featured' => true,                // ★運営おすすめに設定！
+                'is_featured' => true,                // ★運営おすすめに設定
             ]
         );
 
 
         // === 2. 商品（グッズ）データの作成 ===
         
-        // 鮫島ぬりえさんの商品
+        //例１
         Product::create([
             'user_id' => $creator1->id,
             'name' => '『罰して光』ポストカード',
@@ -60,10 +60,10 @@ class ProductSeeder extends Seeder
             'description' => 'なきそさんのMVのポストカード。白ベースのクリーンな額縁にも映えるデザインです。',
             'category' => 'ポストカード',
             'image' => 'punish-light.jpeg',
-            'status' => 'published',
+            'status' => 'public',
         ]);
 
-        // sumiさんの商品（ランキングテスト用などに適当にいいね数を想定）
+        // 例２
         Product::create([
             'user_id' => $creator2->id,
             'name' => 'フォウくんアクキー',
@@ -71,7 +71,7 @@ class ProductSeeder extends Seeder
             'description' => '透明感のあるアクリルキーホルダー。光に透かすととても綺麗です。',
             'category' => 'キーホルダー',
             'image' => '90528723_p1_master1200.jpg', // 前に用意したテスト画像など
-            'status' => 'published',
+            'status' => 'public',
         ]);
     }
 }

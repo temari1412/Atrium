@@ -22,15 +22,18 @@ class DashboardController extends Controller
         $totalLikes = \App\Models\Like::whereIn('product_id', $productIds)->count();
         
         // 購入数（ログインユーザーの商品が購入された総数量）
-        $totalSalesCount = DB::table('order_items')
-            ->whereIn('product_id', $productIds)
-            ->sum('quantity');
+        $totalSalesCount = DB::table('order_items')//自分の商品が何個売れたか
+        ->join('orders', 'order_items.order_id', '=', 'orders.id')//注文が「決済済みなのか」「pendingなのか」を知る
+        ->whereIn('order_items.product_id', $productIds)//ログインしているユーザーが出品した商品のIDだけに絞る
+        ->where('orders.status', 'ordered')//決済のみ絞り込み
+        ->sum('order_items.quantity');
 
         // 先週比の計算（今週の購入数 先週の購入数）
         $thisWeekSales = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->whereIn('order_items.product_id', $productIds)
             ->where('orders.created_at', '>=', now()->subWeek())
+            ->where('orders.status', 'ordered')//決済のみ絞り込み
             ->sum('order_items.quantity');
 
         $lastWeekSales = DB::table('order_items')
@@ -38,6 +41,7 @@ class DashboardController extends Controller
             ->whereIn('order_items.product_id', $productIds)
             ->where('orders.created_at', '>=', now()->subWeeks(2))
             ->where('orders.created_at', '<', now()->subWeek())
+            ->where('orders.status', 'ordered')//決済のみ絞り込み
             ->sum('order_items.quantity');
 
         $salesDiff = $thisWeekSales - $lastWeekSales;
@@ -45,21 +49,32 @@ class DashboardController extends Controller
         //　商品別販売ランキングの取得
         $productRanking = Product::where('user_id', $user->id)
         ->withCount('likes')
-        ->withSum('orderItems as total_sold', 'quantity')
+        ->withSum(['orderItems as total_sold' => function ($query) {
+            $query->whereHas('order', function ($orderQuery) {
+                $orderQuery->where('status', 'ordered');
+            });
+        }], 'quantity')
         ->orderByDesc('total_sold')
         ->take(5)
         ->get();
 
         // 年代別売上の取得
-        $stats = Order::join('order_items', 'orders.id', '=', 'order_items.order_id')
+        $stats = Order::join('order_items', 'orders.id', '=', 'order_items.order_id')//pendingは集計しない
             ->join('users', 'orders.user_id', '=', 'users.id')
             ->whereIn('order_items.product_id', $productIds)
+            ->where('orders.status', 'ordered')
+            //誕生日まで考慮して計算
             ->selectRaw("
                 strftime('%Y-%m', orders.created_at) as month, 
                 CASE 
                     WHEN users.birth_date IS NULL THEN '不明'
-                    ELSE (CAST((strftime('%Y', 'now') - strftime('%Y', users.birth_date)) / 10 AS INT) * 10)
-                end as generation, 
+                    ELSE (
+                        CAST((
+                            strftime('%Y', 'now') - strftime('%Y', users.birth_date)
+                            - (strftime('%m-%d', 'now') < strftime('%m-%d', users.birth_date))
+                        ) / 10 AS INT) * 10
+                    )
+                END as generation,
                 SUM(order_items.price_at_purchase * order_items.quantity) as total_sales")
             ->groupBy('month', 'generation')
             ->orderBy('month', 'ASC')
@@ -87,6 +102,7 @@ class DashboardController extends Controller
         $genderStats = Order::join('order_items', 'orders.id', '=', 'order_items.order_id')
             ->join('users', 'orders.user_id', '=', 'users.id')
             ->whereIn('order_items.product_id', $productIds)
+            ->where('orders.status', 'ordered')
             ->selectRaw("
                 CASE 
                     WHEN users.gender = 'woman' OR users.gender = 'female' THEN '女性'

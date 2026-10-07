@@ -70,6 +70,13 @@
                 <label for="name" class="block text-sm font-bold text-gray-700 mb-2">名前</label>
                 <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" autocomplete="name" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-xl text-sm outline-none transition" required>
             </div>
+            
+            <!-- 自己紹介 -->
+            <div class="mb-6">
+                <label for="introduction" class="block text-sm font-bold text-gray-700 mb-2">自己紹介</label>
+                <textarea name="introduction" id="introduction" rows="4" maxlength="255" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-xl text-sm outline-none transition resize-none" placeholder="自己紹介を入力してください">{{ old('introduction', $user->introduction) }}</textarea>
+                <p class="text-xs text-gray-400 mt-2">255文字以内で入力してください。</p>
+            </div>
 
             <!-- アイコン画像編集エリア -->
             <div class="mb-6">

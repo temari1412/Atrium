@@ -10,13 +10,25 @@
                 
                 <div class="flex items-center space-x-4 flex-grow">
                     <!-- ▼▼▼ ユーザーのプロフィールルートへ直接飛ばす（※カラム名は実際のアプリに合わせて変更してください） ▼▼▼ -->
-                    <a href="{{ isset($message->from_user_id) ? route('users.show', $message->from_user_id) : '#' }}" onclick="event.stopPropagation();" class="flex-shrink-0 group">                        @if(!empty($message->user_image))
+                    @if($message->from_user_id && \App\Models\User::find($message->from_user_id))
+                        <a href="{{ route('users.show', $message->from_user_id) }}"
+                        onclick="event.stopPropagation();"
+                        class="flex-shrink-0 group">
+                    @else
+                        <div class="flex-shrink-0">
+                    @endif                        
+                    @if(!empty($message->user_image))
                             <img src="{{ str_starts_with($message->user_image, 'http') ? $message->user_image : Storage::disk('s3')->url($message->user_image) }}" alt="アイコン" class="w-10 h-10 rounded-full object-cover transition group-hover:opacity-80">
                         @else
                             <div class="w-10 h-10 rounded-full bg-fuchsia-100 text-fuchsia-700 flex items-center justify-center font-bold text-sm transition group-hover:bg-fuchsia-200">
                                 {{ mb_substr($message->title, 0, 1) }}
                             </div>
                         @endif
+                        @if($message->from_user_id && \App\Models\User::find($message->from_user_id))
+                    </a>
+                    @else
+                        </div>
+                    @endif
                     </a>
                     <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
 

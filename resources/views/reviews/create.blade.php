@@ -16,14 +16,12 @@
             <div class="mb-6">
                 <textarea name="comment" rows="5" class="w-full border-gray-300 rounded-xl p-3" required>{{ old('comment', $review->comment ?? '') }}</textarea>
             </div>
-            <button type="submit" class="w-full bg-fuchsia-500 text-white py-3 rounded-xl font-bold">投稿する</button>
+            <button type="submit" id="submit-btn" class="w-full bg-fuchsia-500 text-white py-3 rounded-xl font-bold">
+                投稿する
+            </button>
         </form>
     </div>
 </div>
-{{-- 送信ボタンに id を追加 --}}
-<button type="submit" id="submit-btn" class="w-full bg-fuchsia-500 text-white py-3 rounded-xl font-bold">
-    投稿する
-</button>
 
 <script>
     // フォーム送信時にボタンを無効化する処理
@@ -34,6 +32,7 @@
         btn.innerText = '送信中...';
     });
 </script>
+
 <script>
     const input = document.getElementById('rating-value');
     const stars = document.querySelectorAll('.star');

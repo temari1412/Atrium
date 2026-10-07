@@ -161,14 +161,22 @@
         <ul class="space-y-6 text-sm font-medium">
             <li><a href="/" class="hover:text-fuchsia-400 transition">トップページ・検索</a></li>
             <li><a href="{{ route('mypage') }}" class="hover:text-fuchsia-400 transition">マイページ</a></li>
+            {{-- メッセージリンク（バッジ付き） --}}
             <li>
                 <a href="{{ route('messages.index') }}" class="flex items-center justify-between hover:text-fuchsia-400 transition">
                     <span>通知一覧</span>
-                    @if(isset($unreadMessageCount) && $unreadMessageCount > 0)
-                        <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                            {{ $unreadMessageCount > 9 ? '9+' : $unreadMessageCount }}
-                        </span>
-                    @endif
+                    @auth
+                        @php
+                            // ログイン中のユーザーの未読通知数を直接取得する
+                            $unreadCount = Auth::user()->messages()->where('is_read', false)->count();
+                        @endphp
+
+                        @if($unreadCount > 0)
+                            <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                            </span>
+                        @endif
+                    @endauth
                 </a>
             </li>
             @auth
@@ -254,7 +262,5 @@
             });
         });
     </script>
-</body>
-</html>
 </body>
 </html>

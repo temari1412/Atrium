@@ -352,11 +352,16 @@
         <li>
             <a href="{{ route('messages.index') }}" class="flex items-center justify-between hover:text-fuchsia-400 transition">
                 <span>通知一覧</span>
-                @if(isset($unreadMessageCount) && $unreadMessageCount > 0)
-                    <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {{ $unreadMessageCount > 9 ? '9+' : $unreadMessageCount }}
-                    </span>
-                @endif
+                @auth
+                    @php
+                        $unreadCount = Auth::user()->messages()->where('is_read', false)->count();
+                    @endphp
+                    @if($unreadCount > 0)
+                        <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                        </span>
+                    @endif
+                @endauth
             </a>
         </li>
         @auth
