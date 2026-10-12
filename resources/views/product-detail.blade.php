@@ -240,23 +240,47 @@
             <h2 class="text-xl font-bold mb-6">レビュー</h2>
             <div class="space-y-6">
                 @forelse($product->reviews as $review)
-                    @if($review->ai_status === 'public' || Auth::id() === $review->user_id)
-                        <div class="border-b border-gray-100 pb-4">
+                @if($review->ai_status === 'public' || (Auth::check() && (int) Auth::id() === (int) $review->user_id))                        <div class="border-b border-gray-100 pb-4">
                             <div class="flex items-center justify-between mb-2">
                                 <div class="flex items-center">
                                     <span class="font-bold text-sm">{{ $review->user->name }}</span>
                                     <span class="ml-2 text-yellow-400 text-xs">★ {{ $review->rating }}</span>
                                 </div>
-                                @if(Auth::id() === $review->user_id)
-                                    <div class="flex items-center gap-3">
-                                        <button onclick="document.getElementById('review-modal').classList.remove('hidden')" class="text-gray-400 hover:text-fuchsia-500 transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                                        </button>
-                                        <form action="{{ route('reviews.destroy', $review->id) }}" method="POST" onsubmit="return confirm('本当に削除しますか？');">
-                                            @csrf 
-                                            @method('DELETE')
-                                            <button type="submit" class="text-xs text-red-500 hover:underline">削除</button>
-                                        </form>
+                                @if(Auth::check() && (int) Auth::id() === (int) $review->user_id)                                    <div class="flex items-center gap-3">
+                                <button
+    type="button"
+    onclick="openReviewModal()"
+    class="text-gray-400 hover:text-fuchsia-500 transition"
+    title="レビューを編集"
+>
+    {{-- 鉛筆アイコン --}}
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16.862 4.487l2.651 2.651M4 20l4.5-1 11-11a2.121 2.121 0 0 0-3-3l-11 11L4 20z"/>
+    </svg>
+</button>
+
+<form
+    action="{{ route('reviews.destroy', $review->id) }}"
+    method="POST"
+    onsubmit="return confirm('本当に削除しますか？');"
+>
+    @csrf
+    @method('DELETE')
+
+    <button
+        type="submit"
+        class="text-gray-400 hover:text-red-500 transition"
+        title="レビューを削除"
+    >
+        {{-- ゴミ箱アイコン --}}
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M4 7h16"/>
+        </svg>
+    </button>
+</form>
+                  
                                     </div>
                                 @endif
                             </div>
@@ -307,53 +331,152 @@
     </div>
 </div> 
 
-<div id="review-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white p-8 rounded-3xl w-full max-w-lg mx-4">
-        <h2 class="text-xl font-bold mb-6">{{ $existingReview ? 'レビューを編集' : 'レビューを投稿' }}</h2>
-        <form action="{{ $existingReview ? route('reviews.update', [$product->id, $existingReview->id]) : route('reviews.store', $product->id) }}" method="POST">
+
+<div id="review-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="bg-white p-8 rounded-3xl w-full max-w-lg mx-auto shadow-xl">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8">
+            {{ $existingReview ? 'レビューを編集' : 'レビューを投稿' }}
+        </h2>
+
+        <form
+            id="review-form"
+            action="{{ $existingReview ? route('reviews.update', [$product->id, $existingReview->id]) : route('reviews.store', $product->id) }}"
+            method="POST"
+        >
             @csrf
-            @if($existingReview) 
-                @method('PATCH') 
+
+            @if($existingReview)
+                @method('PATCH')
             @endif
-            
-            <div class="mb-6">
-                <div id="star-rating" class="flex space-x-1 cursor-pointer justify-center">
+
+            <div class="mb-8">
+                <div id="star-rating" class="flex justify-center gap-2">
                     @for($i = 1; $i <= 5; $i++)
-                        <svg class="star w-10 h-10 transition-colors {{ ($i <= ($existingReview->rating ?? 0)) ? 'text-yellow-400' : 'text-gray-300' }} hover:text-yellow-400" 
-                             data-value="{{ $i }}" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c-.3-.921-.755-1.688-1.54-1.118l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118-1.175 0-2.8 2.034c-0.784 0.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
+                        <button
+                            type="button"
+                            class="star-button p-0 border-0 bg-transparent focus:outline-none"
+                            data-value="{{ $i }}"
+                            aria-label="{{ $i }}星"
+                        >
+                            <svg
+                                class="star w-10 h-10 transition-colors {{ $i <= ($existingReview->rating ?? 0) ? 'text-yellow-400' : 'text-gray-300' }}"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        </button>
                     @endfor
                 </div>
-                <input type="hidden" name="rating" id="rating-value" value="{{ $existingReview->rating ?? 0 }}">
+
+                <input
+                    type="hidden"
+                    name="rating"
+                    id="rating-value"
+                    value="{{ old('rating', $existingReview->rating ?? '') }}"
+                >
             </div>
 
-            <textarea name="comment" class="w-full border border-gray-200 rounded-xl p-4 mb-6" rows="4" required>{{ $existingReview->comment ?? '' }}</textarea>
-            
-            <div class="flex gap-4">
-                <button type="button" onclick="document.getElementById('review-modal').classList.add('hidden')" class="flex-1 py-3 text-gray-500 font-bold">閉じる</button>
-                <button type="submit" class="flex-1 bg-fuchsia-500 text-white py-3 rounded-xl font-bold hover:bg-fuchsia-600">保存</button>
+            <div class="mb-8">
+                <textarea
+                    name="comment"
+                    id="review-comment"
+                    class="w-full border border-gray-200 rounded-2xl p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-fuchsia-300 focus:border-fuchsia-400 resize-y"
+                    rows="5"
+                    maxlength="500"
+                    placeholder="作品の感想を書いてください"
+                    required
+                >{{ old('comment', $existingReview->comment ?? '') }}</textarea>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button
+                    type="button"
+                    id="close-review-modal"
+                    class="flex-1 py-4 text-gray-500 font-bold hover:text-gray-700 transition"
+                >
+                    閉じる
+                </button>
+
+                <button
+                    type="submit"
+                    id="submit-review-button"
+                    class="flex-1 bg-fuchsia-500 text-white py-4 rounded-2xl font-bold hover:bg-fuchsia-600 transition disabled:opacity-50"
+                >
+                    保存
+                </button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    // レビューの星評価用スクリプト
-    const stars = document.querySelectorAll('.star');
-    const input = document.getElementById('rating-value');
-    if (stars.length > 0 && input) {
-        stars.forEach(star => {
-            star.addEventListener('click', () => {
-                const val = star.getAttribute('data-value');
-                input.value = val;
-                stars.forEach((s, idx) => {
-                    s.classList.toggle('text-yellow-400', idx < val);
-                    s.classList.toggle('text-gray-300', idx >= val);
-                });
-            });
-        });
+// レビューの星評価用スクリプト
+const reviewModal = document.getElementById('review-modal');
+const ratingInput = document.getElementById('rating-value');
+const starButtons = document.querySelectorAll('.star-button');
+const reviewForm = document.getElementById('review-form');
+const closeReviewModal = document.getElementById('close-review-modal');
+const submitReviewButton = document.getElementById('submit-review-button');
+
+function updateReviewStars(value) {
+    document.querySelectorAll('#star-rating .star').forEach((star, index) => {
+        const selected = index < Number(value);
+
+        star.classList.toggle('text-yellow-400', selected);
+        star.classList.toggle('text-gray-300', !selected);
+    });
+}
+
+starButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const value = Number(button.dataset.value);
+
+        ratingInput.value = value;
+        updateReviewStars(value);
+    });
+});
+
+// 編集時は既存の評価を表示
+updateReviewStars(ratingInput?.value || 0);
+
+// 閉じるボタン
+closeReviewModal?.addEventListener('click', () => {
+    reviewModal.classList.add('hidden');
+});
+
+// 背景部分をクリックして閉じる
+reviewModal?.addEventListener('click', event => {
+    if (event.target === reviewModal) {
+        reviewModal.classList.add('hidden');
     }
+});
+
+// 保存前に評価が選択されているか確認
+reviewForm?.addEventListener('submit', event => {
+    if (!ratingInput.value || Number(ratingInput.value) < 1) {
+        event.preventDefault();
+        alert('星を選択してください。');
+        return;
+    }
+
+    submitReviewButton.disabled = true;
+    submitReviewButton.textContent = '保存中...';
+});
+
+// 新規レビュー投稿モーダルを開く
+function openReviewModal() {
+    if (!reviewModal) return;
+
+    reviewModal.classList.remove('hidden');
+
+    // 新規投稿時は星とコメントをリセット
+    if (!{{ $existingReview ? 'true' : 'false' }}) {
+        ratingInput.value = '';
+        updateReviewStars(0);
+        document.getElementById('review-comment').value = '';
+    }
+}
 
     // 非同期「いいね」＆「フォロー」ボタン用スクリプト
     document.addEventListener('DOMContentLoaded', () => {
@@ -439,7 +562,7 @@
                         followButton.textContent = 'フォロー中';
                         followButton.className = 'px-4 py-2 rounded-xl text-sm font-bold border transition bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200';
                     } else {
-               ƒ√         followButton.textContent = 'フォローする';
+                        followButton.textContent = 'フォローする';
                         followButton.className = 'px-4 py-2 rounded-xl text-sm font-bold border transition bg-fuchsia-500 text-white border-transparent hover:bg-fuchsia-600';
                     }
                 } catch (error) {

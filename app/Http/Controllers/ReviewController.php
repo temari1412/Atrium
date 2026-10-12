@@ -12,6 +12,7 @@ class ReviewController extends Controller
     public function create($id)
     {
         $product = Product::findOrFail($id);
+        
         //ログイン中のユーザーが、この商品を含む注文をしたことがあるか
         $hasPurchased = OrderItem::whereHas('order', function ($query) {
             $query->where('user_id', Auth::id());
